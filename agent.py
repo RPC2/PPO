@@ -80,8 +80,6 @@ class Agent(AgentConfig, EnvConfig):
                 if self.gif:
                     frames_for_gif.append(new_state)
 
-                self.memory.add(current_state, reward, action, terminal, new_state)
-
                 current_state = new_state
                 total_episode_reward += reward
 
@@ -91,23 +89,19 @@ class Agent(AgentConfig, EnvConfig):
                     self.minibatch_learning()
 
                 if terminal:
-                    last_episode_reward = total_episode_reward
-                    last_episode_length = step - start_step
-                    reward_history.append(last_episode_reward)
+                    episode_length = step - start_step
+                    reward_history.append(total_episode_reward)
 
                     print('episode: %.2f, total step: %.2f, last_episode length: %.2f, last_episode_reward: %.2f, '
-                          'loss: %.4f, eps = %.2f' % (episode, step, last_episode_length, last_episode_reward,
+                          'loss: %.4f, eps = %.2f' % (episode, step, episode_length, total_episode_reward,
                                                       self.loss, self.epsilon))
 
                     self.env.reset()
 
                     if self.gif:
-                        generate_gif(last_episode_length, frames_for_gif, total_episode_reward, "./GIF/", episode)
+                        generate_gif(episode_length, frames_for_gif, total_episode_reward, "./GIF/", episode)
 
                     break
-
-            if episode % self.reset_step == 0:
-                self.target_network.load_state_dict(self.policy_network.state_dict())
 
             if episode % self.plot_every == 0:
                 plot_graph(reward_history)
@@ -117,18 +111,7 @@ class Agent(AgentConfig, EnvConfig):
         self.env.close()
 
     def minibatch_learning(self):
-        state_batch, reward_batch, action_batch, terminal_batch, next_state_batch = self.memory.sample(self.batch_size)
-
-        y_batch = torch.FloatTensor()
-        for i in range(self.batch_size):
-            if terminal_batch[i]:
-                y_batch = torch.cat((y_batch, torch.FloatTensor([reward_batch[i]])), 0)
-            else:
-                next_state_q = torch.max(self.target_network(torch.FloatTensor(next_state_batch[i]).to(device)))
-                y = torch.FloatTensor([reward_batch[i] + self.gamma * next_state_q])
-                y_batch = torch.cat((y_batch, y), 0)
-
-        current_state_q = torch.max(self.policy_network(torch.FloatTensor(state_batch).to(device)), dim=1)[0]
+        # TODO: implement PPO update
 
         self.loss = self.criterion(current_state_q, y_batch).mean()
 
