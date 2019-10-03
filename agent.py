@@ -24,7 +24,6 @@ class Agent(AgentConfig, EnvConfig):
         self.memory = ReplayMemory(memory_size=self.memory_size, action_size=self.action_size, per=self.per)
         if self.train_cartpole:
             self.policy_network = MlpPolicy(action_size=self.action_size).to(device)
-            self.target_network = MlpPolicy(action_size=self.action_size).to(device)
         self.optimizer = optim.Adam(self.policy_network.parameters(), lr=self.learning_rate)
         self.loss = 0
         self.criterion = nn.MSELoss()
@@ -65,7 +64,7 @@ class Agent(AgentConfig, EnvConfig):
 
                 # Choose action
                 action = random.randrange(self.action_size) if np.random.rand() < self.epsilon else \
-                    torch.argmax(self.policy_network(torch.FloatTensor(current_state).to(device))).item()
+                    torch.argmax(self.policy_network.pi(torch.FloatTensor(current_state).to(device))).item()
 
                 # print(current_state)
                 # print(self.policy_network(torch.FloatTensor(current_state).to(device)))
