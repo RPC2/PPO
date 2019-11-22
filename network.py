@@ -10,15 +10,16 @@ class MlpPolicy(nn.Module):
         self.fc1 = nn.Linear(self.input_size, 24)
         self.fc2 = nn.Linear(24, 24)
         self.fc3_pi = nn.Linear(24, self.action_size)
-        self.fc3_v = nn.Linear(24, self.action_size)
+        self.fc3_v = nn.Linear(24, 1)
         self.tanh = nn.Tanh()
         self.relu = nn.ReLU()
+        self.softmax = nn.Softmax(dim=-1)
 
     def pi(self, x):
         x = self.relu(self.fc1(x))
         x = self.relu(self.fc2(x))
         x = self.fc3_pi(x)
-        return x
+        return self.softmax(x)
 
     def v(self, x):
         x = self.relu(self.fc1(x))
