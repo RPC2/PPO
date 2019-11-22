@@ -22,6 +22,7 @@ class Agent(AgentConfig, EnvConfig):
         self.action_size = self.env.action_space.n  # 2 for cartpole
         if self.train_cartpole:
             self.policy_network = MlpPolicy(action_size=self.action_size).to(device)
+            self.old_policy = MlpPolicy(action_size=self.action_size).to(device)
         self.optimizer = optim.Adam(self.policy_network.parameters(), lr=self.learning_rate)
         self.loss = 0
         self.criterion = nn.MSELoss()
@@ -78,7 +79,7 @@ class Agent(AgentConfig, EnvConfig):
 
                 reward = -1 if terminal else reward
 
-                self.add_memory(current_state, action, reward, new_state, terminal, prob_a[action])
+                self.add_memory(current_state, action, reward/10.0, new_state, terminal, prob_a[action])
 
                 if self.gif:
                     frames_for_gif.append(new_state)
@@ -123,14 +124,14 @@ class Agent(AgentConfig, EnvConfig):
         delta = td_target - self.policy_network.v(torch.FloatTensor(self.memory['state']).to(device))
         # print(delta)
         delta = delta.detach().numpy()
-        # print(delta)
+        # print('delta', delta)
 
         # get advantage
         advantages = []
         adv = 0.0
-        # print(delta[::-1])
+        # print('delta[::-1]', delta[::-1])
         for d in delta[::-1]:
-            # print(d[0])
+            # print('d[0]', d[0])
             adv = self.gamma * self.lmbda * adv + d[0]
             # print(adv)
             advantages.append([adv])
@@ -145,8 +146,11 @@ class Agent(AgentConfig, EnvConfig):
         # print(self.memory['action'])
         # print('action_prob', self.memory['action_prob'])
         new_probs_a = torch.gather(pi, 1, torch.tensor(self.memory['action']))
+        old_pi = self.old_policy.pi(torch.FloatTensor(self.memory['state']).to(device))
+        old_probs_a = torch.gather(old_pi, 1, torch.tensor(self.memory['action']))
         # print('new_probs_a', new_probs_a)
-        ratio = torch.exp(torch.log(new_probs_a) - torch.log(torch.tensor(self.memory['action_prob'])))
+        # ratio = torch.exp(torch.log(new_probs_a) - torch.log(torch.tensor(self.memory['action_prob'])))
+        ratio = torch.exp(torch.log(new_probs_a) - torch.log(old_probs_a))
         # ratio = [rt.]
         # print('ratio', ratio)
 
@@ -164,10 +168,12 @@ class Agent(AgentConfig, EnvConfig):
         entropy = torch.tensor([[e] for e in entropy])
         # print('entropy', entropy)
         self.loss = (-torch.min(surr1, surr2) + self.v_coef * v_loss - self.entropy_coef * entropy).mean()
-        print('min of surr1, surr2', (-torch.min(surr1, surr2)).mean())
-        print('v loss', (self.v_coef * v_loss).mean())
-        print('entropy loss', (- self.entropy_coef * entropy).mean())
-        # print(self.loss)
+        # print('min of surr1, surr2', (-torch.min(surr1, surr2)).mean())
+        # print('v loss', (self.v_coef * v_loss).mean())
+        # print('entropy loss', (- self.entropy_coef * entropy).mean())
+        # print('loss', self.loss)
+
+        self.old_policy.load_state_dict(self.policy_network.state_dict())
 
         self.optimizer.zero_grad()
         self.loss.backward()
