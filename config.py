@@ -4,7 +4,7 @@ class AgentConfig:
     # train_freq = 1
     # start_learning = 10
     # batch_size = 32
-    plot_every = 500
+    plot_every = 100
     # reset_step = 100
     horizon = 32
 
@@ -12,9 +12,9 @@ class AgentConfig:
     # epsilon_minimum = 0
     # epsilon_decay_rate = 0.9995
     k_epoch = 3
-    learning_rate = 0.005
+    learning_rate = 0.002
     lmbda = 0.95
-    eps_clip = 0.2
+    eps_clip = 0.1
     v_coef = 1
     entropy_coef = 0.01
 

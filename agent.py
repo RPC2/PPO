@@ -46,12 +46,13 @@ class Agent(AgentConfig, EnvConfig):
         episode = 0
         step = 0
         reward_history = []
+        solved = False
 
         if not os.path.exists("./GIF/"):
             os.makedirs("./GIF/")
 
         # A new episode
-        while step < self.max_step:
+        while not solved:
             start_step = step
             episode += 1
             episode_length = 0
@@ -66,7 +67,7 @@ class Agent(AgentConfig, EnvConfig):
             # current_state = np.stack((state, state, state, state))
 
             # A step in an episode
-            while sum(reward_history[-100:-1])/100 < 194:
+            while not solved:
                 step += 1
                 episode_length += 1
 
@@ -95,6 +96,8 @@ class Agent(AgentConfig, EnvConfig):
                 if terminal:
                     episode_length = step - start_step
                     reward_history.append(total_episode_reward)
+                    if len(reward_history) > 100 and sum(reward_history[-200:-1]) / 200 >= 193:
+                        solved = True
 
                     print('episode: %.2f, total step: %.2f, last_episode length: %.2f, last_episode_reward: %.2f, '
                           'loss: %.4f' % (episode, step, episode_length, total_episode_reward, self.loss))
@@ -124,6 +127,7 @@ class Agent(AgentConfig, EnvConfig):
 
             # self.env.render()
 
+        plot_graph(reward_history)
         self.env.close()
 
     def update_network(self):
