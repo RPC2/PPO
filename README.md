@@ -2,7 +2,7 @@
 
 ### Result
 
-<img src="./asset/score_lr0.002.png" alt="result" style="zoom:80%;" />
+<img src="./asset/score_solved2.png" alt="result" style="zoom:80%;" />
 
 
 
@@ -14,13 +14,13 @@ gamma = 0.99
 
 lambda = 0.95
 
-horizon = 32
+update_freq = 1
 
 k_epoch = 3
 
-learning_rate = 0.002
+initial_learning_rate = 0.05
 
-eps_clip = 0.1
+eps_clip = 0.2
 
 v_coef = 1
 
