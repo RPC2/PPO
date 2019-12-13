@@ -45,7 +45,6 @@ class Agent(AgentConfig, EnvConfig):
             start_step = step
             episode += 1
             episode_length = 0
-            total_episode_reward = 0
             frames_for_gif = []
 
             self.gif = True if episode % self.gif_every == 0 else False
@@ -53,6 +52,7 @@ class Agent(AgentConfig, EnvConfig):
             # Get initial state
             state, reward, action, terminal = self.new_random_game()
             current_state = state
+            total_episode_reward = 1
 
             # A step in an episode
             while not solved:
@@ -84,7 +84,6 @@ class Agent(AgentConfig, EnvConfig):
 
                     self.finish_path(episode_length)
 
-                    # The maximum score of CartPole under our setting is 197
                     if len(reward_history) > 100 and sum(reward_history[-100:-1]) / 100 >= 195:
                         solved = True
 
