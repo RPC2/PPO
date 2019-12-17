@@ -2,7 +2,7 @@
 
 ### Result
 
-<img src="./asset/score_solved2.png" alt="result" style="zoom:80%;" />
+<img src="./asset/score_best.png" alt="result" style="zoom:80%;" />
 
 
 
@@ -18,7 +18,7 @@ update_freq = 1
 
 k_epoch = 3
 
-initial_learning_rate = 0.05
+initial_learning_rate = 0.02
 
 eps_clip = 0.2
 

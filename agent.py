@@ -5,15 +5,15 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from config import AgentConfig, EnvConfig
+from config import AgentConfig
 from network import MlpPolicy
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class Agent(AgentConfig, EnvConfig):
+class Agent(AgentConfig):
     def __init__(self):
-        self.env = gym.make(self.env_name)
+        self.env = gym.make('CartPole-v0')
         self.action_size = self.env.action_space.n  # 2 for cartpole
         if self.train_cartpole:
             self.policy_network = MlpPolicy(action_size=self.action_size).to(device)
@@ -45,9 +45,6 @@ class Agent(AgentConfig, EnvConfig):
             start_step = step
             episode += 1
             episode_length = 0
-            frames_for_gif = []
-
-            self.gif = True if episode % self.gif_every == 0 else False
 
             # Get initial state
             state, reward, action, terminal = self.new_random_game()
@@ -61,6 +58,7 @@ class Agent(AgentConfig, EnvConfig):
 
                 # Choose action
                 prob_a = self.policy_network.pi(torch.FloatTensor(current_state).to(device))
+                # print(prob_a)
                 action = torch.distributions.Categorical(prob_a).sample().item()
 
                 # Act
@@ -70,9 +68,6 @@ class Agent(AgentConfig, EnvConfig):
                 reward = -1 if terminal else reward
 
                 self.add_memory(current_state, action, reward/10.0, new_state, terminal, prob_a[action].item())
-
-                if self.gif:
-                    frames_for_gif.append(new_state)
 
                 current_state = new_state
                 total_episode_reward += reward
