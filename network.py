@@ -41,7 +41,7 @@ class CNNPolicy(nn.Module):
         )
         self.linear = nn.Linear(3136, 512)
         self.fc_pi = nn.Linear(512, action_size)
-        self.fc_v = nn.Linear(512, action_size)
+        self.fc_v = nn.Linear(512, 1)
         self.softmax = nn.Softmax(dim=-1)
 
     def pi(self, x):
